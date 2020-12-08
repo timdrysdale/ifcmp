@@ -22,14 +22,7 @@ Use Go's parser to create an AST from the actual code, and another from the inte
 
 ### Cleaning up the README.md for parsing
 
-The ```README.md``` will need cleaning up before it can be presented to the parser. 
-
-Proposed approach:
-
-  - create an array containing verbatim code blocks
-  - check each code block for the existence of an interface declaration for the intended interface
-  - pass that code block for parsing
-  
+The ```README.md``` is searched for code blocks containing ```type <interface> interface```, which are the only contents from the README which are presented to the parser. 
 
 ### What's checked?
 
@@ -197,6 +190,55 @@ type Field struct {
 
 Note that ```Expr``` can themselves contain ```Expr```, so the function to generate the ```string``` representation is recursive.
 
+
+## Example results from run on live repo
+
+```
+Actual: GetResource(ctx context.Context, token, realm, clientID, resourceID string) (*ResourceRepresentation, error)
+Readme: GetResource(ctx context.Context, token, realm, clientID, resourceID string) (*Resource, error)
+
+Actual: UpdateResource(ctx context.Context, token, realm, clientID string, resource ResourceRepresentation) error
+Readme: UpdateResource(ctx context.Context, token, realm, clientID string, resource Resource) error
+
+Actual: DecodeAccessTokenCustomClaims(ctx context.Context, accessToken, realm, expectedAudience string, claims jwt.Claims) (*jwt.Token, error)
+Readme: DecodeAccessTokenCustomClaims(ctx context.Context, accessToken, realm string, claims jwt.Claims) (*jwt.Token, error)
+
+Actual: CreateRealmRole(ctx context.Context, token, realm string, role Role) (string, error)
+Readme: CreateRealmRole(ctx context.Context, token, realm string, role Role) error
+
+Actual: GetResources(ctx context.Context, token, realm, clientID string, params GetResourceParams) ([]*ResourceRepresentation, error)
+Readme: GetResources(ctx context.Context, token, realm, clientID string) ([]*Resource, error)
+
+Actual: CreateResource(ctx context.Context, token, realm, clientID string, resource ResourceRepresentation) (*ResourceRepresentation, error)
+Readme: CreateResource(ctx context.Context, token, realm, clientID string, resource Resource) (*Resource, error)
+
+Actual: CreateGroup(ctx context.Context, accessToken, realm string, group Group) (string, error)
+Readme: CreateGroup(ctx context.Context, accessToken, realm string, group Group) error
+
+Actual: CreateClient(ctx context.Context, accessToken, realm string, clientID Client) (string, error)
+Readme: CreateClient(ctx context.Context, accessToken, realm string, clientID Client) error
+
+Actual: CreateClientProtocolMapper(ctx context.Context, token, realm, clientID string, mapper ProtocolMapperRepresentation) (string, error)
+Readme: CreateClientProtocolMapper(ctx context.Context, token, realm, clientID string, mapper ProtocolMapperRepresentation) error
+
+Actual: CreateComponent(ctx context.Context, accessToken, realm string, component Component) (string, error)
+Readme: CreateComponent(ctx context.Context, accessToken string, realm, component Component) error
+
+Actual: LoginClientSignedJWT(ctx context.Context, clientID, realm string, key interface{}, signedMethod jwt.SigningMethod, expiresAt *jwt.Time) (*JWT, error)
+Readme: LoginClientSignedJWT(ctx context.Context, clientID, realm string, key interface{}, signedMethod jwt.SigningMethod, expiresAt int64) (*JWT, error)
+
+Actual: CreateClientRole(ctx context.Context, accessToken, realm, clientID string, role Role) (string, error)
+Readme: CreateClientRole(ctx context.Context, accessToken, realm, clientID string, role Role) error
+
+Actual: DecodeAccessToken(ctx context.Context, accessToken, realm, expectedAudience string) (*jwt.Token, *jwt.MapClaims, error)
+Readme: DecodeAccessToken(ctx context.Context, accessToken, realm string) (*jwt.Token, *jwt.MapClaims, error)
+
+Actual: DeletePolicy(ctx context.Context, token, realm, clientID, policyID string) error
+Readme: DeletePolicy(ctx context.Context, token, realm, clientID string, policyID string) error
+
+Actual: CreateClientScope(ctx context.Context, accessToken, realm string, scope ClientScope) (string, error)
+Readme: CreateClientScope(ctx context.Context, accessToken, realm string, scope ClientScope) error
+```
 
 
 
