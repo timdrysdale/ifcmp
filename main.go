@@ -1,12 +1,12 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"go/ast"
 	"go/parser"
 	"go/token"
 	"os"
-	"reflect"
 	"strings"
 )
 
@@ -200,11 +200,76 @@ func Names(idents []*ast.Ident) []string {
 	return names
 }
 
+func GetMethodMap(f *ast.File, interfaceName string) (map[string]Method, error) {
+
+	methodMap := make(map[string]Method)
+
+	actual := &ast.Object{}
+	found := false
+	for _, obj := range f.Scope.Objects {
+		if obj.Name == interfaceName && obj.Kind == ast.Typ {
+			found = true
+			actual = obj
+		}
+	}
+
+	if !found {
+		return methodMap, errors.New("interface not found")
+	}
+
+	//fmt.Printf("%s\n", actual.Name) //GoCloak
+
+	//fmt.Printf("%T\n", actual.Decl) //*ast.TypeSpec
+
+	d := actual.Decl
+
+	//fmt.Printf("%s\n", d.(*ast.TypeSpec).Name) //GoCloak
+
+	//fmt.Printf("%T\n", d.(*ast.TypeSpec).Type) //*ast.InterfaceType
+
+	methods := (d.(*ast.TypeSpec).Type).(*ast.InterfaceType).Methods
+
+	for _, m := range methods.List {
+		// m is *ast.Field
+		methodName := m.Names[0].Name
+
+		switch m.Type.(type) {
+		case *ast.FuncType:
+			ft := m.Type.(*ast.FuncType)
+			params := []Param{}
+			results := []string{}
+
+			if ft.Params != nil {
+				if ft.Params.List != nil {
+					for _, item := range ft.Params.List {
+						params = append(params, Param{
+							Names: Names(item.Names),
+							Type:  TypeString(item.Type),
+						})
+					}
+				}
+			}
+
+			if ft.Results != nil {
+				if ft.Results.List != nil {
+					for _, item := range ft.Results.List {
+						results = append(results, TypeString(item.Type))
+					}
+				}
+			}
+
+			methodMap[methodName] = Method{
+				Name:    methodName,
+				Params:  params,
+				Results: results,
+			}
+		}
+	}
+
+	return methodMap, nil
+}
+
 func main() {
-
-	actualMethods := make(map[string]Method)
-
-	things := make(map[string]int)
 
 	if len(os.Args) != 4 {
 		fmt.Println("Usage ifcmp <README.md> <interface.go> <interface>")
@@ -224,119 +289,12 @@ func main() {
 		os.Exit(1)
 	}
 
-	//fmt.Println(f.Name)
-	//fmt.Println(f.Scope)
-	//fmt.Printf("%+v", f)
+	actualMethods, err := GetMethodMap(f, interfaceName)
 
-	//fmt.Println()
-
-	actual := &ast.Object{}
-	found := false
-	for _, obj := range f.Scope.Objects {
-		if obj.Name == interfaceName && obj.Kind == ast.Typ {
-			found = true
-			actual = obj
-		}
-	}
-
-	if !found {
-		fmt.Printf("interface %s not found in %s", interfaceName, interfaceSource)
+	if err != nil {
+		fmt.Println(err.Error())
 		os.Exit(1)
 	}
-
-	fmt.Printf("%s\n", actual.Name) //GoCloak
-
-	fmt.Printf("%T\n", actual.Decl) //*ast.TypeSpec
-
-	d := actual.Decl
-
-	fmt.Printf("%s\n", d.(*ast.TypeSpec).Name) //GoCloak
-
-	fmt.Printf("%T\n", d.(*ast.TypeSpec).Type) //*ast.InterfaceType
-
-	methods := (d.(*ast.TypeSpec).Type).(*ast.InterfaceType).Methods
-
-	for _, m := range methods.List {
-		// m is *ast.Field
-		methodName := m.Names[0].Name
-		fmt.Printf("%T: %s", m.Type, methodName)
-
-		switch m.Type.(type) {
-		case *ast.FuncType:
-			ft := m.Type.(*ast.FuncType)
-			lp := 0
-			lr := 0
-
-			params := []Param{}
-			results := []string{}
-
-			if ft.Params != nil {
-				if ft.Params.List != nil {
-					lp = len(ft.Params.List)
-
-					for _, item := range ft.Params.List {
-
-						// overall stats on type
-						v := reflect.ValueOf(item.Type)
-						typeStr := v.String()
-						if val, ok := things[typeStr]; !ok {
-							things[typeStr] = 1
-						} else {
-							things[typeStr] = val + 1
-						}
-						//
-						params = append(params, Param{
-							Names: Names(item.Names),
-							Type:  TypeString(item.Type),
-						})
-						fmt.Printf("%T", item.Type)
-					}
-				}
-			}
-			if ft.Results != nil {
-				if ft.Results.List != nil {
-					lr = len(ft.Results.List)
-
-					for _, item := range ft.Results.List {
-						results = append(results, TypeString(item.Type))
-					}
-
-				}
-			}
-			fmt.Printf("%d/%d", lp, lr)
-			actualMethods[methodName] = Method{
-				Name:    methodName,
-				Params:  params,
-				Results: results,
-			}
-		}
-
-		fmt.Printf("\n")
-
-		//print params
-		//m.Params
-
-		//print returns
-	}
-
-	// params and results - check length
-
-	/* for _, decl := range actual.Decl {
-		fmt.Println(decl)
-	}
-
-	for k, v := range f.Decls {
-		fmt.Printf("%v %v\n", k, v)
-	}
-	*/
-
-	//ast.Print(fset, f)
-
-	//for k, v := range things {
-	//	fmt.Printf("%v:%d\n", k, v)
-	//}
-
-	//fmt.Println(actualMethods)
 
 	for _, v := range actualMethods {
 		fmt.Println(v.String())
