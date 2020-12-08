@@ -18,6 +18,11 @@ Proposed approach:
 
 ### What's in the AST?
 
+There's a nice introduction to traversing AST [here](https://www.zupzup.org/go-ast-traversal/index.html). 
+A [list of AST tips](https://magodo.github.io/go-ast-tips/) indicates node replacement is possible.
+
+Applying the basic approach to our example in ```./testdata``` we see many lines of output when we print the whole tree. 
+
 Using the ```ast.Print()``` method, you can see the GoCloak interface as an ```ast.GenDecl``` (line 39), named on line 47, and identified as an ```*ast.InterfaceType```  on line 55. 
 
 ```
