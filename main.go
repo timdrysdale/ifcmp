@@ -268,6 +268,7 @@ func main() {
 			lr := 0
 
 			params := []Param{}
+			results := []string{}
 
 			if ft.Params != nil {
 				if ft.Params.List != nil {
@@ -295,13 +296,18 @@ func main() {
 			if ft.Results != nil {
 				if ft.Results.List != nil {
 					lr = len(ft.Results.List)
+
+					for _, item := range ft.Results.List {
+						results = append(results, TypeString(item.Type))
+					}
+
 				}
 			}
 			fmt.Printf("%d/%d", lp, lr)
 			actualMethods[methodName] = Method{
 				Name:    methodName,
 				Params:  params,
-				Results: []string{},
+				Results: results,
 			}
 		}
 
@@ -352,6 +358,14 @@ func (m *Method) String() string {
 
 	str = str + strings.Join(params, ", ") + ")"
 
+	if len(m.Results) > 0 {
+		str = str + " "
+		if len(m.Results) > 1 {
+			str = str + "(" + strings.Join(m.Results, ", ") + ")"
+		} else {
+			str = str + m.Results[0]
+		}
+	}
 	return str
 
 }
