@@ -220,6 +220,8 @@ func main() {
 				foundErrors = true
 				fmt.Printf("Actual: %s\nReadme: %s\n\n", v.String(), vd.String())
 			}
+		} else {
+			fmt.Printf("Actual: %s\nReadme: %s\n\n", v.String(), "")
 		}
 	}
 
