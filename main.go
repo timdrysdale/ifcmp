@@ -209,11 +209,9 @@ func main() {
 		os.Exit(1)
 	}
 
-	chkMethods := make(map[string]bool)
 	foundErrors := false
 
 	for k, v := range actualMethods {
-		chkMethods[k] = false
 		if vd, ok := docMethods[k]; ok {
 
 			if !(reflect.DeepEqual(v.Params, vd.Params) && reflect.DeepEqual(v.Results, vd.Results)) {
@@ -221,7 +219,15 @@ func main() {
 				fmt.Printf("Actual: %s\nReadme: %s\n\n", v.String(), vd.String())
 			}
 		} else {
+			foundErrors = true
 			fmt.Printf("Actual: %s\nReadme: %s\n\n", v.String(), "")
+		}
+	}
+
+	// check for extra methods in doc which are not in the interface
+	for k, vd := range docMethods {
+		if _, ok := actualMethods[k]; !ok {
+			fmt.Printf("Actual: %s\nReadme: %s\n\n", "", vd.String())
 		}
 	}
 

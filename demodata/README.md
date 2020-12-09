@@ -224,7 +224,8 @@ type GoCloak interface {
 	GetAvailableRealmRolesByGroupID(ctx context.Context, token, realm, groupID string) ([]*Role, error)
 
 	// *** Client Roles ***
-
+	
+	ThisIsAnExtraMethod(ctz context.Context, token, realm, clientID string) error
 	AddClientRoleToGroup(ctx context.Context, token, realm, clientID, groupID string, roles []Role) error
 	DeleteClientRoleFromGroup(ctx context.Context, token, realm, clientID, groupID string, roles []Role) error
 	GetCompositeClientRolesByRoleID(ctx context.Context, token, realm, clientID, roleID string) ([]*Role, error)
