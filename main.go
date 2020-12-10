@@ -227,6 +227,7 @@ func main() {
 	// check for extra methods in doc which are not in the interface
 	for k, vd := range docMethods {
 		if _, ok := actualMethods[k]; !ok {
+			foundErrors = true
 			fmt.Printf("Actual: %s\nReadme: %s\n\n", "", vd.String())
 		}
 	}
